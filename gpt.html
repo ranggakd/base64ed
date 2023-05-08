@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title> 6️⃣4️⃣ base64ed 6️⃣4️⃣</title>
+	<link rel="icon" type="image/png" href="assets/icon.png">
+	<link rel="stylesheet" type="text/css"
+		href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
+	<style>
+		#dropzone {
+			height: 200px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border: 2px dashed grey;
+			font-size: 1.5em;
+			color: grey;
+			background-color: #1B1C1D;
+			cursor: pointer;
+			transition: all 0.3s ease-in-out;
+		}
+
+		#dropzone:hover {
+			color: white;
+			border-color: white;
+		}
+
+		#preview {
+			margin-top: 2em;
+            margin-bottom: 2em;
+		}
+
+		.text-wrap {
+			white-space: pre-wrap;
+			word-wrap: break-word;
+		}
+	</style>
+</head>
+
+<body class="ui inverted segment">
+    <div class="ui container">
+		<h3 id="base64" class="ui inverted header">base64ed</h3>
+	</div>
+
+	<div class="ui container">
+		<div id="dropzone" class="ui segment">
+			drop image here or paste them from clipboard
+		</div>
+		<img id="preview" class="ui centered image" src="#" alt="Preview Image" style="display:none">
+		<div id="convert-btn" class="ui animated inverted medium green button center aligned" tabindex="0">
+			<div class="visible content">
+				<i class="image icon"></i>
+				<i class="right arrow icon"></i>
+				<i class="align left icon"></i>
+			</div>
+			<div class="hidden content">base6️⃣4️⃣ed</div>
+		</div>
+		<div class="ui top attached segment">
+			<div class="ui top attached label">
+				<!-- this icon supposed to be a copy button for value inside p tag with text-wrap class later -->
+                <i id="copy-icon" class="copy link icon"></i>
+			</div>
+		</div>
+		<div id="output" class="ui instructive bottom attached segment">
+            <p class="text-wrap">
+            </p>
+		</div>			  
+	</div>
+
+	<script defer src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+	<script defer src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
+    <script>
+		// Get the dropzone element
+		var dropzone = document.getElementById('dropzone');
+
+		// Add event listeners for drag and drop
+		dropzone.addEventListener('dragover', handleDragOver, false);
+		dropzone.addEventListener('drop', handleDrop, false);
+
+		// Add event listener for pasting from clipboard
+		document.addEventListener('paste', handlePaste);
+
+		// Add event listener for converting image to base64
+		var convertBtn = document.getElementById('convert-btn');
+		convertBtn.addEventListener('click', handleConvert);
+
+		function handleDragOver(event) {
+			event.stopPropagation();
+			event.preventDefault();
+			event.dataTransfer.dropEffect = 'copy'; // Set the dropEffect to copy to allow dropping
+			dropzone.classList.add('dashed');
+		}
+
+        function handleDrop(event) {
+            event.stopPropagation();
+            event.preventDefault();
+
+            var file = event.dataTransfer.files[0] || event.clipboardData.items[0].getAsFile();
+            var reader = new FileReader();
+
+            reader.onload = function (event) {
+                var img = document.getElementById('preview');
+                img.src = event.target.result;
+                img.style.display = 'block';
+                var canvas = document.createElement('canvas');
+                var ctx = canvas.getContext('2d');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+                var mimeType = file.type || 'image/jpeg';
+                var base64String = canvas.toDataURL(mimeType);
+                var pTag = document.createElement('p');
+                pTag.classList.add('text-wrap');
+                var htmlDiv = document.querySelector('.ui.instructive.bottom.attached.segment');
+                htmlDiv.innerHTML = '';
+                pTag.textContent = `![alt text](${base64String})`;
+                htmlDiv.appendChild(pTag);
+            }
+
+            reader.readAsDataURL(file);
+            dropzone.classList.remove('dashed');
+        }
+
+		function handlePaste(event) {
+			if (event.clipboardData.items) {
+				var items = event.clipboardData.items;
+				for (var i = 0; i < items.length; i++) {
+					if (items[i].type.indexOf("image") !== -1) {
+						var blob = items[i].getAsFile();
+						var reader = new FileReader();
+
+						reader.onload = function (event) {
+							var img = document.getElementById('preview');
+							img.src = event.target.result;
+							img.style.display = 'block';
+						}
+
+						reader.readAsDataURL(blob);
+					}
+				}
+			}
+		}
+
+		function handleConvert() {
+			var img = document.getElementById('preview');
+			var canvas = document.createElement('canvas');
+			var ctx = canvas.getContext('2d');
+			canvas.width = img.width;
+			canvas.height = img.height;
+			ctx.drawImage(img, 0, 0);
+			var base64String = canvas.toDataURL('image/jpeg');
+			var pTag = document.createElement('p');
+            pTag.classList.add('text-wrap');
+			var htmlDiv = document.querySelector('.ui.instructive.bottom.attached.segment');
+			htmlDiv.innerHTML = '';
+			pTag.textContent = `![alt text](${base64String})`;
+			htmlDiv.appendChild(pTag);
+		}
+
+        // Get the copy icon element
+        var copyIcon = document.getElementById('copy-icon');
+
+        // Add event listener for copying content from <p> tag
+        copyIcon.addEventListener('click', function() {
+        // Get the <p> tag element
+        var pTag = document.querySelector('#output p.text-wrap');
+
+        // Create a temporary input element to hold the content
+        var tempInput = document.createElement('input');
+        tempInput.setAttribute('type', 'text');
+        tempInput.setAttribute('value', pTag.textContent);
+
+        // Add the input element to the document and select its content
+        document.body.appendChild(tempInput);
+        tempInput.select();
+
+        // Copy the content to the clipboard
+        document.execCommand('copy');
+
+        // Remove the input element
+        document.body.removeChild(tempInput);
+
+        // Show a tooltip indicating that the content has been copied
+        copyIcon.setAttribute('data-tooltip', 'Copied!');
+        setTimeout(function() {
+            copyIcon.setAttribute('data-tooltip', 'Copy code');
+        }, 2000);
+    });        
+	</script>
