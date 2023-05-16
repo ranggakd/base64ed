@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title> 6️⃣4️⃣ base64ed 6️⃣4️⃣</title>
+	<link rel="icon" type="image/png" href="assets/icon.png">
+	<link rel="stylesheet" type="text/css"
+		href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
+	<style>
+		#dropzone {
+			height: 200px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border: 2px dashed grey;
+			font-size: 1.5em;
+			color: grey;
+			background-color: #1B1C1D;
+			cursor: pointer;
+			transition: all 0.3s ease-in-out;
+		}
+
+		#dropzone:hover {
+			color: white;
+			border-color: white;
+		}
+
+		#preview {
+			max-width: 100%;
+			max-height: 300px;
+			margin-top: 20px;
+		}
+
+		.text-wrap {
+			white-space: pre-wrap;
+			word-wrap: break-word;
+		}
+	</style>
+</head>
+
+<body class="ui inverted segment">
+	<div class="ui container">
+		<h3 id="base64" class="ui inverted header">base64ed</h3>
+	</div>
+
+	<div class="ui container">
+		<div id="dropzone" class="ui segment">
+			drop image here or paste them from clipboard
+		</div>
+		<img id="preview" class="ui centered medium image" src="#" alt="Preview Image" style="display:none">
+		<div class="ui animated inverted medium green button center aligned" tabindex="0">
+			<div class="visible content">
+				<i class="image icon"></i>
+				<i class="right arrow icon"></i>
+				<i class="align left icon"></i>
+			</div>
+			<div class="hidden content">base6️⃣4️⃣ed</div>
+		</div>
+		<div class="html ui top attached segment">
+			<div class="ui top attached label">
+				<i data-content="Copy code" class="copy link icon"></i>
+			</div>
+		</div>
+		<div class="ui instructive bottom attached segment">
+			<pre>
+				<code class="code xml">
+					<!-- ![alt text](data:image/[insert mime type];base64, [insert base64 string here]) -->
+					<!-- this code below just placeholder -->
+					<span class="tag">&lt;<span class="title">i</span> <span class="attribute">class</span>=<span class="value">"align center icon"</span>&gt;</span><span class="tag">&lt;/<span class="title">i</span>&gt;</span>
+				</code>
+			</pre>
+		</div>			  
+	</div>
+
+	<script defer src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+	<script defer src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
+	<script>
+		// Get the dropzone element
+		var dropzone = document.getElementById('dropzone');
+
+		// Add event listeners for drag and drop
+		dropzone.addEventListener('dragover', handleDragOver, false);
+		dropzone.addEventListener('drop', handleDrop, false);
+
+		// Add event listener for pasting from clipboard
+		document.addEventListener('paste', handlePaste);
+
+		function handleDragOver(event) {
+			event.stopPropagation();
+			event.preventDefault();
+			event.dataTransfer.dropEffect = 'copy'; // Set the dropEffect to copy to allow dropping
+			dropzone.classList.add('dashed');
+		}
+
+		function handleDrop(event) {
+			event.stopPropagation();
+			event.preventDefault();
+
+			var file = event.dataTransfer.files[0];
+			var reader = new FileReader();
+
+			reader.onload = function (event) {
+				var img = document.getElementById('preview');
+				img.src = event.target.result;
+				img.style.display = 'block';
+			}
+
+			reader.readAsDataURL(file);
+			dropzone.classList.remove('dashed');
+		}
+
+		function handlePaste(event) {
+			if (event.clipboardData.items) {
+				var items = event.clipboardData.items;
+				for (var i = 0; i < items.length; i++) {
+					if (items[i].type.indexOf("image") !== -1) {
+						var blob = items[i].getAsFile();
+						var reader = new FileReader();
+
+						reader.onload = function (event) {
+							var img = document.getElementById('preview');
+							img.src = event.target.result;
+							img.style.display = 'block';
+						}
+
+						reader.readAsDataURL(blob);
+					}
+				}
+			}
+		}
+	</script>
+</body>
+
+</html>
