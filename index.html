@@ -1,228 +1,1398 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-	<!-- Standard Meta -->
-	<meta charset="utf-8" />
-	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-	<title> 6️⃣4️⃣ base64ed 6️⃣4️⃣</title>
-	<link rel="icon" type="image/png" href="assets/icon.png">
-	<link rel="stylesheet" type="text/css"
-		href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
-	<style>
-		#dropzone {
-			height: 200px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			border: 2px dashed grey;
-			font-size: 1.5em;
-			color: grey;
-			background-color: #1B1C1D;
-			cursor: pointer;
-			transition: all 0.3s ease-in-out;
-		}
+  <title>64 base64ed — Modern Image &lt;&gt; Base64 Converter</title>
+  <meta name="description" content="Fast, beautiful, client-side image to Base64 encoder and decoder. Perfect for Markdown, HTML, CSS, and web development." />
+  <link rel="icon" type="image/png" href="assets/icon.png" />
 
-		#dropzone:hover {
-			color: white;
-			border-color: white;
-		}
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 
-		#preview {
-			max-width: 100%;
-			max-height: 300px;
-			margin-top: 2em;
-			margin-bottom: 2em;
-		}
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --bg-card: rgba(17, 24, 39, 0.75);
+      --bg-card-hover: rgba(30, 41, 59, 0.85);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-highlight: rgba(16, 185, 129, 0.4);
+      --primary: #10b981;
+      --primary-hover: #059669;
+      --primary-glow: rgba(16, 185, 129, 0.25);
+      --secondary: #06b6d4;
+      --accent: #8b5cf6;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      --code-bg: #060911;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
 
-		h1.ui.center.header {
-			margin-top: 2em;
-		}
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-		h2.ui.center.header {
-			margin: 4em 0em 2em;
-		}
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
 
-		h3.ui.center.header {
-			margin-top: 2em;
-			padding: 2em 0em;
-		}
+    /* Ambient background gradient meshes */
+    .ambient-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
 
-		.container {
-			margin-top: 2em;
-			margin-bottom: 2em;
-		}
+    .ambient-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.15;
+    }
 
-		.text-wrap {
-			white-space: pre-wrap;
-			word-wrap: break-word;
-		}
-	</style>
+    .ambient-orb-1 {
+      width: 500px;
+      height: 500px;
+      top: -100px;
+      left: -100px;
+      background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+    }
+
+    .ambient-orb-2 {
+      width: 600px;
+      height: 600px;
+      bottom: -150px;
+      right: -100px;
+      background: radial-gradient(circle, var(--secondary) 0%, transparent 70%);
+    }
+
+    .ambient-orb-3 {
+      width: 400px;
+      height: 400px;
+      top: 40%;
+      left: 55%;
+      background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+      opacity: 0.1;
+    }
+
+    /* Layout Wrapper */
+    .app-wrapper {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      flex: 1;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .badge-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.9rem;
+      border-radius: 9999px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      color: #34d399;
+      font-size: 0.825rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      backdrop-filter: blur(8px);
+    }
+
+    .badge-tag svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    h1.app-title {
+      font-size: 2.75rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    h1.app-title span.highlight {
+      background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .app-subtitle {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    /* Mode Navigation Tabs */
+    .mode-nav {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 0.35rem;
+      border-radius: 14px;
+      border: 1px solid var(--border-subtle);
+      width: fit-content;
+      margin: 0.5rem auto 0;
+      backdrop-filter: blur(12px);
+    }
+
+    .mode-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.4rem;
+      border-radius: 10px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .mode-btn:hover {
+      color: var(--text-main);
+    }
+
+    .mode-btn.active {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .mode-btn.active.primary-mode {
+      border-color: rgba(16, 185, 129, 0.3);
+      color: #34d399;
+    }
+
+    /* Showcase Card: Meme / Interactive Demo */
+    .showcase-banner {
+      background: linear-gradient(145deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.6));
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 1.25rem 1.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    .showcase-left {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    .showcase-thumb-wrap {
+      position: relative;
+      width: 72px;
+      height: 72px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      flex-shrink: 0;
+      background: #000;
+    }
+
+    .showcase-thumb-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .showcase-text h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 0.2rem;
+    }
+
+    .showcase-text p {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    .btn-demo {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1.2rem;
+      border-radius: 10px;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .btn-demo:hover {
+      background: rgba(16, 185, 129, 0.25);
+      border-color: #34d399;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px var(--primary-glow);
+    }
+
+    /* Main Container Cards */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 2rem;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* Dropzone */
+    .dropzone {
+      position: relative;
+      border: 2px dashed rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      padding: 3rem 1.5rem;
+      text-align: center;
+      background: rgba(15, 23, 42, 0.4);
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    .dropzone:hover,
+    .dropzone.drag-active {
+      border-color: var(--primary);
+      background: rgba(16, 185, 129, 0.05);
+      box-shadow: 0 0 25px rgba(16, 185, 129, 0.15);
+      transform: scale(1.005);
+    }
+
+    .dropzone-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      transition: transform 0.25s ease;
+    }
+
+    .dropzone:hover .dropzone-icon,
+    .dropzone.drag-active .dropzone-icon {
+      transform: translateY(-3px) scale(1.05);
+      color: #34d399;
+    }
+
+    .dropzone-text h4 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 0.35rem;
+    }
+
+    .dropzone-text p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .dropzone-badges {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 0.25rem;
+    }
+
+    .chip {
+      font-size: 0.75rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+    }
+
+    /* Hidden file input */
+    #file-input {
+      display: none;
+    }
+
+    /* Preview & Details Section */
+    .preview-section {
+      display: none;
+      flex-direction: column;
+      gap: 1.5rem;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .preview-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .preview-details {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    .preview-img-container {
+      width: 80px;
+      height: 80px;
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+      background: #000;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .preview-img-container img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .preview-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .preview-name {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #ffffff;
+      max-width: 320px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .preview-stats {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+    }
+
+    .stat-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #d1d5db;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+    }
+
+    .preview-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 0.9rem;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    /* Format Selection Tabs */
+    .format-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .format-pills {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(15, 23, 42, 0.8);
+      padding: 0.3rem;
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      overflow-x: auto;
+    }
+
+    .format-pill {
+      padding: 0.45rem 0.9rem;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .format-pill:hover {
+      color: #ffffff;
+    }
+
+    .format-pill.active {
+      background: var(--primary);
+      color: #0b0f19;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+    }
+
+    .format-options {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.55rem 1.1rem;
+      border-radius: 8px;
+      border: none;
+      background: var(--primary);
+      color: #0b0f19;
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-action:hover {
+      background: #34d399;
+      box-shadow: 0 4px 14px var(--primary-glow);
+    }
+
+    /* Output Code Block */
+    .code-container {
+      position: relative;
+      background: var(--code-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 1rem;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+    }
+
+    .code-scroll {
+      max-height: 220px;
+      overflow-y: auto;
+      padding: 1rem 1.25rem;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      line-height: 1.5;
+      color: #a7f3d0;
+      word-break: break-all;
+      white-space: pre-wrap;
+    }
+
+    /* Custom Scrollbar */
+    .code-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .code-scroll::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 3px;
+    }
+
+    /* Decoder Mode Section */
+    .decoder-section {
+      display: none;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .decoder-textarea {
+      width: 100%;
+      height: 160px;
+      background: var(--code-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 1rem 1.25rem;
+      color: #ffffff;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      resize: vertical;
+      line-height: 1.5;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .decoder-textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+    }
+
+    .decoder-result {
+      display: none;
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 1.5rem;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .decoder-preview {
+      max-width: 220px;
+      max-height: 220px;
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      background: #000;
+      object-fit: contain;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: 10px;
+      background: #10b981;
+      color: #062b1e;
+      font-weight: 600;
+      font-size: 0.9rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 100;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Features Grid */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+      margin-top: 0.5rem;
+    }
+
+    .feature-card {
+      background: rgba(15, 23, 42, 0.4);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 1.25rem;
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      backdrop-filter: blur(8px);
+    }
+
+    .feature-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .feature-info h5 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 0.25rem;
+    }
+
+    .feature-info p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border-subtle);
+      padding: 2.5rem 1.5rem 2rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.25rem;
+      margin-top: auto;
+    }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .footer-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .footer-link:hover {
+      color: #ffffff;
+    }
+
+    .footer-link.highlight {
+      color: #34d399;
+    }
+
+    .footer-credit {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .app-wrapper {
+        padding: 1.5rem 1rem;
+      }
+      h1.app-title {
+        font-size: 2rem;
+      }
+      .card {
+        padding: 1.25rem;
+      }
+      .showcase-banner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .btn-demo {
+        width: 100%;
+        justify-content: center;
+      }
+      .preview-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .format-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .format-pills {
+        width: 100%;
+        justify-content: flex-start;
+      }
+    }
+  </style>
 </head>
 
-<body class="ui inverted segment">
-	<div class="ui text container center aligned">
-		<h1 class="ui inverted center aligned header"> 6️⃣4️⃣ base64ed 6️⃣4️⃣</h1>
-		<h3 class="ui inverted center aligned header">Convert any MIME type of image into base64 (markdown purpose
-			mainly)</h3>
-		<div class="ui animated inverted medium green button center aligned" tabindex="0">
-			<div class="visible content">Convert <i class="right arrow icon"></i></div>
-			<a class="hidden content" href="#base64">base 6️⃣4️⃣</a>
-		</div>
-	</div>
+<body>
+  <!-- Ambient background lighting -->
+  <div class="ambient-bg">
+    <div class="ambient-orb ambient-orb-1"></div>
+    <div class="ambient-orb ambient-orb-2"></div>
+    <div class="ambient-orb ambient-orb-3"></div>
+  </div>
 
-	<div class="ui container">
-		<div class="ui inverted segment">
-			<div class="ui two column very relaxed stackable grid">
-				<div class="column">
-					<img class="ui right floated medium rounded image" src="assets/cat_would.jpeg" alt="cat would">
-				</div>
-				<div class="column middle aligned">
-					<div class="ui inverted placeholder">
-						<div class="paragraph">
-							<div class="line"></div>
-							<div class="line"></div>
-							<div class="line"></div>
-							<div class="line"></div>
-							<div class="line"></div>
-						</div>
-						<div class="paragraph">
-							<div class="line"></div>
-							<div class="line"></div>
-							<div class="line"></div>
-							<div class="line"></div>
-						</div>
-						<div class="paragraph">
-							<div class="line"></div>
-							<div class="line"></div>
-							<div class="line"></div>
-						</div>
-						<div class="paragraph">
-							<div class="line"></div>
-							<div class="line"></div>
-						</div>
-						<div class="paragraph">
-							<div class="line"></div>
-							<div class="line"></div>
-							<div class="line"></div>
-							<div class="line"></div>
-							<div class="line"></div>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="ui vertical inverted divider">
-				into
-			</div>
-		</div>
-	</div>
+  <div class="app-wrapper">
+    <!-- Header -->
+    <header>
+      <div class="badge-tag">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="16 18 22 12 16 6"></polyline>
+          <polyline points="8 6 2 12 8 18"></polyline>
+        </svg>
+        Client-Side &bull; 100% Private
+      </div>
+      <h1 class="app-title">
+        <span>6️⃣4️⃣</span>
+        <span class="highlight">base64ed</span>
+        <span>6️⃣4️⃣</span>
+      </h1>
+      <p class="app-subtitle">
+        Instant, zero-latency image to Base64 encoder and decoder. Tailored for Markdown, HTML embeds, and CSS stylesheets.
+      </p>
 
-	<div class="ui container">
-		<h3 id="base64" class="ui inverted header">base64ed</h3>
-	</div>
+      <!-- Mode Selector -->
+      <nav class="mode-nav" aria-label="Mode Selection">
+        <button id="mode-encoder-btn" class="mode-btn active primary-mode">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+          Image &rarr; Base64
+        </button>
+        <button id="mode-decoder-btn" class="mode-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="4 7 4 4 20 4 20 7"></polyline>
+            <line x1="9" y1="20" x2="15" y2="20"></line>
+            <line x1="12" y1="4" x2="12" y2="20"></line>
+          </svg>
+          Base64 &rarr; Image
+        </button>
+      </nav>
+    </header>
 
-	<div class="ui container">
-		<div id="dropzone" class="ui segment">
-			drop image here or paste them from clipboard
-		</div>
-		<div class="ui animated inverted medium green button center aligned" tabindex="0">
-			<div class="visible content">
-				<i class="image icon"></i>
-				<i class="right arrow icon"></i>
-				<i class="align left icon"></i>
-			</div>
-			<div class="hidden content">base6️⃣4️⃣ed</div>
-		</div>
-		<img id="preview" class="ui centered medium image" src="#" alt="Preview Image" style="display:none">
-		<div class="html ui top attached segment">
-			<div class="ui top attached label">
-				<i data-content="Copy code" class="copy link icon"></i>
-			</div>
-		</div>
-		<div class="ui instructive bottom attached segment">
-			<pre>
-				<code class="code xml">
-					<span class="tag">&lt;<span class="title">i</span> <span class="attribute">class</span>=<span class="value">"align center icon"</span>&gt;</span><span class="tag">&lt;/<span class="title">i</span>&gt;</span>
-				</code>
-			</pre>
-		</div>
+    <!-- Showcase / Nostalgic Demo Banner -->
+    <div class="showcase-banner">
+      <div class="showcase-left">
+        <div class="showcase-thumb-wrap">
+          <img src="assets/cat_would.jpeg" alt="Cat Would meme" />
+        </div>
+        <div class="showcase-text">
+          <h3>Try with Sample Image ("Cat WOULD")</h3>
+          <p>Instantly convert the classic demo image to test all export formats</p>
+        </div>
+      </div>
+      <button id="load-sample-btn" class="btn-demo">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+        Load Demo Image
+      </button>
+    </div>
 
-		<footer class="ui inverted vertical footer segment">
-			<div class="ui container center aligned">
-			  <div class="ui stackable inverted divided equal height stackable grid">
-				<div class="sixteen wide column">
-				  <h4 class="ui inverted header">Donation</h4>
-				  <div class="ui inverted link list">
-					<a href="https://beacons.ai/ranggakd" class="item">Support the Author</a>
-				  </div>
-				</div>
-			  </div>
-			</div>
-		  </footer>
-				  
-	</div>
+    <!-- MAIN ENCODER SECTION -->
+    <section id="encoder-view" class="card">
+      <!-- Drag & Drop Zone -->
+      <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Drop image or click to upload">
+        <div class="dropzone-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+        </div>
+        <div class="dropzone-text">
+          <h4>Drop your image here, or browse</h4>
+          <p>You can also press <kbd style="background:rgba(255,255,255,0.1);padding:0.15rem 0.4rem;border-radius:4px;font-family:var(--font-mono);">Ctrl+V</kbd> anywhere to paste from clipboard</p>
+        </div>
+        <div class="dropzone-badges">
+          <span class="chip">PNG</span>
+          <span class="chip">JPEG</span>
+          <span class="chip">WEBP</span>
+          <span class="chip">SVG</span>
+          <span class="chip">GIF</span>
+          <span class="chip">AVIF</span>
+        </div>
+        <input type="file" id="file-input" accept="image/*" />
+      </div>
 
-	<!-- it is recommended to use the defer attribute for the JavaScript files to ensure they are not
-		executed until the HTML document is parsed. This can improve the loading time of the page. -->
-	<script defer src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-	<script defer src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
-	<script>
-		// Get the dropzone element
-		var dropzone = document.getElementById('dropzone');
+      <!-- Preview & Export Workspace -->
+      <div id="preview-section" class="preview-section">
+        <!-- Header info -->
+        <div class="preview-header">
+          <div class="preview-details">
+            <div class="preview-img-container">
+              <img id="preview-img" src="" alt="Thumbnail preview" />
+            </div>
+            <div class="preview-meta">
+              <div id="file-name" class="preview-name">image.png</div>
+              <div class="preview-stats">
+                <span class="stat-badge" id="file-dim">0 &times; 0 px</span>
+                <span class="stat-badge" id="file-orig-size">0 KB</span>
+                <span class="stat-badge" id="file-b64-size">Base64: 0 KB</span>
+              </div>
+            </div>
+          </div>
+          <div class="preview-actions">
+            <button id="clear-btn" class="btn-secondary" title="Clear current image">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+              Clear
+            </button>
+          </div>
+        </div>
 
-		// Add event listeners for drag and drop
-		dropzone.addEventListener('dragover', handleDragOver, false);
-		dropzone.addEventListener('drop', handleDrop, false);
+        <!-- Format Selector Toolbar -->
+        <div class="format-toolbar">
+          <div class="format-pills" role="tablist">
+            <button class="format-pill active" data-format="markdown">Markdown</button>
+            <button class="format-pill" data-format="dataurl">Data URI</button>
+            <button class="format-pill" data-format="html">HTML &lt;img&gt;</button>
+            <button class="format-pill" data-format="css">CSS url()</button>
+            <button class="format-pill" data-format="raw">Raw Base64</button>
+          </div>
 
-		// Add event listener for pasting from clipboard
-		document.addEventListener('paste', handlePaste);
+          <div class="format-options">
+            <button id="copy-btn" class="btn-action">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span id="copy-btn-text">Copy to Clipboard</span>
+            </button>
+          </div>
+        </div>
 
-		function handleDragOver(event) {
-			event.stopPropagation();
-			event.preventDefault();
-			event.dataTransfer.dropEffect = 'copy'; // Set the dropEffect to copy to allow dropping
-			dropzone.classList.add('dashed');
-		}
+        <!-- Code Output Box -->
+        <div class="code-container">
+          <div class="code-header">
+            <span id="format-label">Markdown Format (![alt](data:...))</span>
+            <span id="char-count">0 characters</span>
+          </div>
+          <div id="code-output" class="code-scroll"></div>
+        </div>
+      </div>
+    </section>
 
-		function handleDrop(event) {
-			event.stopPropagation();
-			event.preventDefault();
+    <!-- DECODER SECTION -->
+    <section id="decoder-view" class="card decoder-section">
+      <div>
+        <h3 style="font-size:1.25rem; font-weight:700; color:#fff; margin-bottom:0.35rem;">Base64 &rarr; Image Decoder</h3>
+        <p style="font-size:0.9rem; color:var(--text-muted);">Paste a raw Base64 string or Data URI (`data:image/...`) to reconstruct and preview the image.</p>
+      </div>
 
-			var file = event.dataTransfer.files[0];
-			var reader = new FileReader();
+      <textarea id="decoder-input" class="decoder-textarea" placeholder="Paste Base64 or Data URI here (e.g. data:image/png;base64,iVBORw0KGgo...)"></textarea>
 
-			reader.onload = function (event) {
-				var img = document.getElementById('preview');
-				img.src = event.target.result;
-				img.style.display = 'block';
-			}
+      <div style="display:flex; justify-content:flex-end; gap:0.75rem;">
+        <button id="decode-btn" class="btn-action">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+          Decode Image
+        </button>
+      </div>
 
-			reader.readAsDataURL(file);
-			dropzone.classList.remove('dashed');
-		}
+      <div id="decoder-result" class="decoder-result">
+        <img id="decoder-img" class="decoder-preview" src="" alt="Decoded preview" />
+        <div style="display:flex; flex-direction:column; gap:0.75rem;">
+          <h4 style="color:#fff; font-size:1.1rem;">Decoded Successfully</h4>
+          <p id="decoder-info" style="color:var(--text-muted); font-size:0.875rem;">Dimensions: 0 &times; 0 px</p>
+          <a id="download-decoded-btn" class="btn-secondary" style="text-decoration:none; width:fit-content;" download="decoded-image.png">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Download Reconstructed Image
+          </a>
+        </div>
+      </div>
+    </section>
 
-		function handlePaste(event) {
-			if (event.clipboardData.items) {
-				var items = event.clipboardData.items;
-				for (var i = 0; i < items.length; i++) {
-					if (items[i].type.indexOf("image") !== -1) {
-						var blob = items[i].getAsFile();
-						var reader = new FileReader();
+    <!-- Features / Highlights -->
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+        </div>
+        <div class="feature-info">
+          <h5>Markdown &amp; README Ready</h5>
+          <p>Embed images directly into GitHub READMEs, docs, and issues without external image hosting.</p>
+        </div>
+      </div>
 
-						reader.onload = function (event) {
-							var img = document.getElementById('preview');
-							img.src = event.target.result;
-							img.style.display = 'block';
-						}
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+        </div>
+        <div class="feature-info">
+          <h5>100% Client-Side &amp; Private</h5>
+          <p>All processing is executed entirely within your browser sandbox. No file is ever sent to a server.</p>
+        </div>
+      </div>
 
-						reader.readAsDataURL(blob);
-					}
-				}
-			}
-		}
-	</script>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+          </svg>
+        </div>
+        <div class="feature-info">
+          <h5>Multi-Format Exports</h5>
+          <p>Switch seamlessly between Markdown, Data URI, HTML &lt;img&gt;, CSS background-image, and raw base64.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <div class="footer-links">
+        <a href="https://github.com/ranggakd/base64ed" target="_blank" rel="noopener noreferrer" class="footer-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          GitHub Repository
+        </a>
+        <a href="https://ranggakd.github.io/" class="footer-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          Home Portfolio
+        </a>
+        <a href="https://beacons.ai/ranggakd" target="_blank" rel="noopener noreferrer" class="footer-link highlight">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+          </svg>
+          Support the Author
+        </a>
+      </div>
+      <div class="footer-credit">
+        &copy; <span id="year">2026</span> ranggakd &bull; Built with clean vanilla web standards
+      </div>
+    </footer>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+    <span>Copied to clipboard!</span>
+  </div>
+
+  <script>
+    // State
+    const state = {
+      mode: 'encoder', // 'encoder' | 'decoder'
+      format: 'markdown', // 'markdown' | 'dataurl' | 'html' | 'css' | 'raw'
+      currentDataUrl: '',
+      rawBase64: '',
+      mimeType: 'image/png',
+      fileName: 'image.png',
+      fileSize: 0,
+      width: 0,
+      height: 0
+    };
+
+    // DOM Elements
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('file-input');
+    const previewSection = document.getElementById('preview-section');
+    const previewImg = document.getElementById('preview-img');
+    const fileNameEl = document.getElementById('file-name');
+    const fileDimEl = document.getElementById('file-dim');
+    const fileOrigSizeEl = document.getElementById('file-orig-size');
+    const fileB64SizeEl = document.getElementById('file-b64-size');
+    const codeOutput = document.getElementById('code-output');
+    const charCountEl = document.getElementById('char-count');
+    const formatLabelEl = document.getElementById('format-label');
+    const formatPills = document.querySelectorAll('.format-pill');
+    const copyBtn = document.getElementById('copy-btn');
+    const copyBtnText = document.getElementById('copy-btn-text');
+    const clearBtn = document.getElementById('clear-btn');
+    const loadSampleBtn = document.getElementById('load-sample-btn');
+    const toast = document.getElementById('toast');
+
+    // Mode Toggle Elements
+    const modeEncoderBtn = document.getElementById('mode-encoder-btn');
+    const modeDecoderBtn = document.getElementById('mode-decoder-btn');
+    const encoderView = document.getElementById('encoder-view');
+    const decoderView = document.getElementById('decoder-view');
+
+    // Decoder Elements
+    const decoderInput = document.getElementById('decoder-input');
+    const decodeBtn = document.getElementById('decode-btn');
+    const decoderResult = document.getElementById('decoder-result');
+    const decoderImg = document.getElementById('decoder-img');
+    const decoderInfo = document.getElementById('decoder-info');
+    const downloadDecodedBtn = document.getElementById('download-decoded-btn');
+
+    // Update Year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Mode Navigation
+    modeEncoderBtn.addEventListener('click', () => switchMode('encoder'));
+    modeDecoderBtn.addEventListener('click', () => switchMode('decoder'));
+
+    function switchMode(newMode) {
+      state.mode = newMode;
+      if (newMode === 'encoder') {
+        modeEncoderBtn.classList.add('active', 'primary-mode');
+        modeDecoderBtn.classList.remove('active', 'primary-mode');
+        encoderView.style.display = 'flex';
+        decoderView.style.display = 'none';
+      } else {
+        modeDecoderBtn.classList.add('active', 'primary-mode');
+        modeEncoderBtn.classList.remove('active', 'primary-mode');
+        encoderView.style.display = 'none';
+        decoderView.style.display = 'flex';
+      }
+    }
+
+    // Dropzone interaction
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        fileInput.click();
+      }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        processFile(e.target.files[0]);
+      }
+    });
+
+    // Drag & Drop
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.add('drag-active');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.remove('drag-active');
+      });
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      const files = e.dataTransfer.files;
+      if (files && files[0]) {
+        processFile(files[0]);
+      }
+    });
+
+    // Global Clipboard Paste
+    document.addEventListener('paste', (e) => {
+      if (state.mode === 'decoder' && document.activeElement === decoderInput) {
+        return; // allow normal paste in decoder textarea
+      }
+      if (e.clipboardData && e.clipboardData.items) {
+        const items = e.clipboardData.items;
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].type.startsWith('image/')) {
+            const file = items[i].getAsFile();
+            if (file) {
+              switchMode('encoder');
+              processFile(file);
+              showToast('Pasted image from clipboard!');
+              return;
+            }
+          }
+        }
+      }
+    });
+
+    // Load Demo Sample Image ("Cat Would")
+    loadSampleBtn.addEventListener('click', async () => {
+      try {
+        switchMode('encoder');
+        const response = await fetch('assets/cat_would.jpeg');
+        const blob = await response.blob();
+        const file = new File([blob], 'cat_would.jpeg', { type: 'image/jpeg' });
+        processFile(file);
+        showToast('Loaded demo image: Cat WOULD');
+      } catch (err) {
+        console.error('Failed to load demo image', err);
+      }
+    });
+
+    // Process Image File
+    function processFile(file) {
+      if (!file.type.startsWith('image/')) {
+        showToast('Please select a valid image file');
+        return;
+      }
+
+      state.fileName = file.name || 'image.png';
+      state.fileSize = file.size;
+      state.mimeType = file.type || 'image/png';
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target.result;
+        state.currentDataUrl = dataUrl;
+        state.rawBase64 = dataUrl.split(',')[1] || '';
+
+        // Read image dimensions
+        const img = new Image();
+        img.onload = () => {
+          state.width = img.naturalWidth || img.width;
+          state.height = img.naturalHeight || img.height;
+          updatePreviewUI();
+        };
+        img.src = dataUrl;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Format bytes
+    function formatBytes(bytes) {
+      if (!bytes || bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return (bytes / Math.pow(k, i)).toFixed(1) + ' ' + sizes[i];
+    }
+
+    // Update UI
+    function updatePreviewUI() {
+      previewImg.src = state.currentDataUrl;
+      fileNameEl.textContent = state.fileName;
+      fileDimEl.textContent = `${state.width} × ${state.height} px`;
+      fileOrigSizeEl.textContent = `Original: ${formatBytes(state.fileSize)}`;
+      fileB64SizeEl.textContent = `Base64: ${formatBytes(state.currentDataUrl.length)}`;
+
+      renderFormattedOutput();
+      previewSection.style.display = 'flex';
+      previewSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // Render formatted string based on active tab
+    function renderFormattedOutput() {
+      let output = '';
+      const cleanName = state.fileName.replace(/\.[^/.]+$/, "");
+
+      switch (state.format) {
+        case 'markdown':
+          output = `![${cleanName}](${state.currentDataUrl})`;
+          formatLabelEl.textContent = 'Markdown Format (![alt](data:...))';
+          break;
+        case 'dataurl':
+          output = state.currentDataUrl;
+          formatLabelEl.textContent = 'Data URI (data:image/...;base64,...)';
+          break;
+        case 'html':
+          output = `<img src="${state.currentDataUrl}" alt="${cleanName}" width="${state.width}" height="${state.height}" />`;
+          formatLabelEl.textContent = 'HTML <img> Tag';
+          break;
+        case 'css':
+          output = `background-image: url("${state.currentDataUrl}");`;
+          formatLabelEl.textContent = 'CSS Background Image (url(...))';
+          break;
+        case 'raw':
+          output = state.rawBase64;
+          formatLabelEl.textContent = 'Raw Base64 Encoded String';
+          break;
+      }
+
+      codeOutput.textContent = output;
+      charCountEl.textContent = `${output.length.toLocaleString()} characters`;
+    }
+
+    // Format Tabs Click
+    formatPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        formatPills.forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        state.format = pill.dataset.format;
+        renderFormattedOutput();
+      });
+    });
+
+    // Copy to Clipboard
+    copyBtn.addEventListener('click', async () => {
+      const textToCopy = codeOutput.textContent;
+      if (!textToCopy) return;
+
+      try {
+        await navigator.clipboard.writeText(textToCopy);
+        copyBtnText.textContent = 'Copied!';
+        copyBtn.style.background = '#34d399';
+        showToast('Copied to clipboard!');
+        setTimeout(() => {
+          copyBtnText.textContent = 'Copy to Clipboard';
+          copyBtn.style.background = '';
+        }, 2000);
+      } catch (err) {
+        // Fallback
+        const textarea = document.createElement('textarea');
+        textarea.value = textToCopy;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        copyBtnText.textContent = 'Copied!';
+        showToast('Copied to clipboard!');
+        setTimeout(() => {
+          copyBtnText.textContent = 'Copy to Clipboard';
+        }, 2000);
+      }
+    });
+
+    // Clear Button
+    clearBtn.addEventListener('click', () => {
+      state.currentDataUrl = '';
+      state.rawBase64 = '';
+      previewImg.src = '';
+      fileInput.value = '';
+      codeOutput.textContent = '';
+      previewSection.style.display = 'none';
+      showToast('Cleared image');
+    });
+
+    // Toast Notification helper
+    let toastTimeout;
+    function showToast(message) {
+      clearTimeout(toastTimeout);
+      const span = toast.querySelector('span');
+      if (span) span.textContent = message;
+      toast.classList.add('show');
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2500);
+    }
+
+    // Decoder Handler
+    decodeBtn.addEventListener('click', handleDecode);
+
+    function handleDecode() {
+      let input = decoderInput.value.trim();
+      if (!input) {
+        showToast('Please paste a Base64 string or Data URI first');
+        return;
+      }
+
+      // If not already a full data URI, assume image/png
+      if (!input.startsWith('data:image/')) {
+        // Strip markdown if user pasted ![alt](data:...)
+        const mdMatch = input.match(/\((data:image\/[^)]+)\)/);
+        if (mdMatch) {
+          input = mdMatch[1];
+        } else {
+          input = `data:image/png;base64,${input}`;
+        }
+      }
+
+      const img = new Image();
+      img.onload = () => {
+        decoderImg.src = input;
+        decoderInfo.textContent = `Dimensions: ${img.naturalWidth || img.width} × ${img.naturalHeight || img.height} px`;
+        downloadDecodedBtn.href = input;
+        decoderResult.style.display = 'flex';
+        showToast('Decoded image successfully!');
+      };
+      img.onerror = () => {
+        showToast('Invalid Base64 or corrupted image data');
+        decoderResult.style.display = 'none';
+      };
+      img.src = input;
+    }
+  </script>
 </body>
-
 </html>
