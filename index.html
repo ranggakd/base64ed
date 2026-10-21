@@ -5,9 +5,9 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>64 base64ed v2.0.0 — Modern Image &lt;&gt; Base64 Converter</title>
-  <meta name="description" content="Fast, beautiful, client-side image to Base64 encoder and decoder. Perfect for Markdown, HTML, CSS, and web development." />
-  <meta name="version" content="2.0.0" />
+  <title>64 base64ed v2.1.0 — Modern Image &lt;&gt; Base64 Converter</title>
+  <meta name="description" content="Fast, beautiful, client-side image to Base64 encoder, decoder, and full-resolution lightbox viewer. Perfect for Markdown, HTML, CSS, and web development." />
+  <meta name="version" content="2.1.0" />
   <link rel="icon" type="image/png" href="assets/icon.png" />
 
   <!-- Google Fonts: Inter & JetBrains Mono -->
@@ -291,12 +291,38 @@
       border: 2px solid rgba(255, 255, 255, 0.1);
       flex-shrink: 0;
       background: #000;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .showcase-thumb-wrap:hover {
+      border-color: var(--primary);
+      transform: scale(1.04);
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
     }
 
     .showcase-thumb-wrap img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+    }
+
+    .thumb-zoom-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      color: #fff;
+    }
+
+    .showcase-thumb-wrap:hover .thumb-zoom-overlay,
+    .preview-img-container:hover .thumb-zoom-overlay,
+    .decoder-img-wrapper:hover .thumb-zoom-overlay {
+      opacity: 1;
     }
 
     .showcase-text h3 {
@@ -457,6 +483,7 @@
     }
 
     .preview-img-container {
+      position: relative;
       width: 80px;
       height: 80px;
       border-radius: 12px;
@@ -467,6 +494,13 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .preview-img-container:hover {
+      border-color: var(--primary);
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
     }
 
     .preview-img-container img {
@@ -536,6 +570,19 @@
 
     .btn-secondary:hover {
       background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-inspect {
+      border-color: rgba(16, 185, 129, 0.3);
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.08);
+    }
+
+    .btn-inspect:hover {
+      background: rgba(16, 185, 129, 0.18);
+      border-color: #34d399;
+      color: #ffffff;
     }
 
     /* Format Selection Tabs */
@@ -643,12 +690,14 @@
     }
 
     /* Custom Scrollbar */
-    .code-scroll::-webkit-scrollbar {
+    .code-scroll::-webkit-scrollbar,
+    .lightbox-viewport::-webkit-scrollbar {
       width: 6px;
       height: 6px;
     }
 
-    .code-scroll::-webkit-scrollbar-thumb {
+    .code-scroll::-webkit-scrollbar-thumb,
+    .lightbox-viewport::-webkit-scrollbar-thumb {
       background: rgba(255, 255, 255, 0.15);
       border-radius: 3px;
     }
@@ -692,13 +741,34 @@
       flex-wrap: wrap;
     }
 
-    .decoder-preview {
-      max-width: 220px;
-      max-height: 220px;
+    .decoder-img-wrapper {
+      position: relative;
       border-radius: 10px;
       border: 1px solid var(--border-subtle);
       background: #000;
+      overflow: hidden;
+      cursor: pointer;
+      display: inline-flex;
+      transition: all 0.2s ease;
+    }
+
+    .decoder-img-wrapper:hover {
+      border-color: var(--primary);
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.25);
+    }
+
+    .decoder-preview {
+      max-width: 220px;
+      max-height: 220px;
       object-fit: contain;
+      display: block;
+    }
+
+    .decoder-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
     }
 
     /* Toast Notification */
@@ -719,7 +789,7 @@
       transform: translateY(100px);
       opacity: 0;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      z-index: 100;
+      z-index: 1000;
     }
 
     .toast.show {
@@ -855,9 +925,10 @@
       overflow: hidden;
     }
 
-    .version-dialog::backdrop {
-      background: rgba(4, 7, 13, 0.75);
-      backdrop-filter: blur(8px);
+    .version-dialog::backdrop,
+    .lightbox-dialog::backdrop {
+      background: rgba(4, 7, 13, 0.85);
+      backdrop-filter: blur(12px);
     }
 
     .dialog-content {
@@ -1035,6 +1106,150 @@
       font-size: 0.8rem;
     }
 
+    /* =========================================
+       FULL RESOLUTION LIGHTBOX MODAL (v2.1.0)
+       ========================================= */
+    .lightbox-dialog {
+      margin: auto;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      background: #090d16;
+      color: var(--text-main);
+      padding: 0;
+      max-width: 95vw;
+      width: 95vw;
+      max-height: 92vh;
+      height: 92vh;
+      box-shadow: 0 30px 90px -20px rgba(0, 0, 0, 0.9), 0 0 40px rgba(16, 185, 129, 0.18);
+      outline: none;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .lightbox-dialog[open] {
+      display: flex;
+    }
+
+    .lightbox-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      flex-wrap: wrap;
+      gap: 1rem;
+      z-index: 10;
+    }
+
+    .lightbox-meta {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .lightbox-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #ffffff;
+      max-width: 300px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .lightbox-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+    }
+
+    .lightbox-toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.45rem 0.85rem;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #d1d5db;
+      font-family: inherit;
+      font-size: 0.825rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .lightbox-toggle-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+    }
+
+    .lightbox-toggle-btn.active {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: #34d399;
+      color: #34d399;
+    }
+
+    .lightbox-viewport {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background: radial-gradient(circle at center, #111827 0%, #060911 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      position: relative;
+    }
+
+    /* Real size vs Fit mode styles */
+    .lightbox-img {
+      transition: max-width 0.2s ease, max-height 0.2s ease;
+      border-radius: 8px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+    }
+
+    .lightbox-img.mode-fit {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .lightbox-img.mode-real {
+      max-width: none;
+      max-height: none;
+      width: auto;
+      height: auto;
+      cursor: grab;
+    }
+
+    .lightbox-footer-info {
+      position: absolute;
+      bottom: 1.25rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--border-subtle);
+      border-radius: 9999px;
+      padding: 0.35rem 1rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      pointer-events: none;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--font-mono);
+      white-space: nowrap;
+    }
+
     /* Responsive adjustments */
     @media (max-width: 768px) {
       .app-wrapper {
@@ -1073,6 +1288,14 @@
       .semver-dot-divider {
         display: none;
       }
+      .lightbox-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .lightbox-controls {
+        width: 100%;
+        justify-content: space-between;
+      }
     }
   </style>
 </head>
@@ -1096,9 +1319,9 @@
           </svg>
           Client-Side &bull; 100% Private
         </div>
-        <button id="version-badge" class="version-badge" aria-label="Version 2.0.0 Changelog" title="Semantic Version 2.0.0 (Click to view Changelog)">
+        <button id="version-badge" class="version-badge" aria-label="Version 2.1.0 Changelog" title="Semantic Version 2.1.0 (Click to view Changelog)">
           <span class="version-dot"></span>
-          <span>v2.0.0</span>
+          <span>v2.1.0</span>
         </button>
       </div>
 
@@ -1108,7 +1331,7 @@
         <span>6️⃣4️⃣</span>
       </h1>
       <p class="app-subtitle">
-        Instant, zero-latency image to Base64 encoder and decoder. Tailored for Markdown, HTML embeds, and CSS stylesheets.
+        Instant, zero-latency image to Base64 encoder, decoder, and full-resolution lightbox viewer. Tailored for Markdown, HTML embeds, and CSS stylesheets.
       </p>
 
       <!-- Mode Selector -->
@@ -1135,12 +1358,20 @@
     <!-- Showcase / Nostalgic Demo Banner -->
     <div class="showcase-banner">
       <div class="showcase-left">
-        <div class="showcase-thumb-wrap">
+        <div id="showcase-thumb-wrap" class="showcase-thumb-wrap" title="Click to view full real size" tabindex="0" role="button">
           <img src="assets/cat_would.jpeg" alt="Cat Would meme" />
+          <div class="thumb-zoom-overlay">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              <line x1="11" y1="8" x2="11" y2="14"></line>
+              <line x1="8" y1="11" x2="14" y2="11"></line>
+            </svg>
+          </div>
         </div>
         <div class="showcase-text">
           <h3>Try with Sample Image ("Cat WOULD")</h3>
-          <p>Instantly convert the classic demo image to test all export formats</p>
+          <p>Instantly convert the classic demo image or click its preview to view full resolution</p>
         </div>
       </div>
       <button id="load-sample-btn" class="btn-demo">
@@ -1182,8 +1413,16 @@
         <!-- Header info -->
         <div class="preview-header">
           <div class="preview-details">
-            <div class="preview-img-container">
+            <div id="preview-img-container" class="preview-img-container" title="Click to view full real size" tabindex="0" role="button">
               <img id="preview-img" src="" alt="Thumbnail preview" />
+              <div class="thumb-zoom-overlay">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  <line x1="11" y1="8" x2="11" y2="14"></line>
+                  <line x1="8" y1="11" x2="14" y2="11"></line>
+                </svg>
+              </div>
             </div>
             <div class="preview-meta">
               <div id="file-name" class="preview-name">image.png</div>
@@ -1195,6 +1434,15 @@
             </div>
           </div>
           <div class="preview-actions">
+            <button id="inspect-btn" class="btn-secondary btn-inspect" title="Inspect full size in Lightbox modal">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                <line x1="11" y1="8" x2="11" y2="14"></line>
+                <line x1="8" y1="11" x2="14" y2="11"></line>
+              </svg>
+              View Full Size
+            </button>
             <button id="clear-btn" class="btn-secondary" title="Clear current image">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -1241,7 +1489,7 @@
     <section id="decoder-view" class="card decoder-section">
       <div>
         <h3 style="font-size:1.25rem; font-weight:700; color:#fff; margin-bottom:0.35rem;">Base64 &rarr; Image Decoder</h3>
-        <p style="font-size:0.9rem; color:var(--text-muted);">Paste a raw Base64 string or Data URI (`data:image/...`) to reconstruct and preview the image.</p>
+        <p style="font-size:0.9rem; color:var(--text-muted);">Paste a raw Base64 string or Data URI (`data:image/...`) to reconstruct, preview, and inspect.</p>
       </div>
 
       <textarea id="decoder-input" class="decoder-textarea" placeholder="Paste Base64 or Data URI here (e.g. data:image/png;base64,iVBORw0KGgo...)"></textarea>
@@ -1256,24 +1504,60 @@
       </div>
 
       <div id="decoder-result" class="decoder-result">
-        <img id="decoder-img" class="decoder-preview" src="" alt="Decoded preview" />
+        <div id="decoder-img-wrapper" class="decoder-img-wrapper" title="Click to view full real size" tabindex="0" role="button">
+          <img id="decoder-img" class="decoder-preview" src="" alt="Decoded preview" />
+          <div class="thumb-zoom-overlay">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              <line x1="11" y1="8" x2="11" y2="14"></line>
+              <line x1="8" y1="11" x2="14" y2="11"></line>
+            </svg>
+          </div>
+        </div>
         <div style="display:flex; flex-direction:column; gap:0.75rem;">
           <h4 style="color:#fff; font-size:1.1rem;">Decoded Successfully</h4>
           <p id="decoder-info" style="color:var(--text-muted); font-size:0.875rem;">Dimensions: 0 &times; 0 px</p>
-          <a id="download-decoded-btn" class="btn-secondary" style="text-decoration:none; width:fit-content;" download="decoded-image.png">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            Download Reconstructed Image
-          </a>
+          <div class="decoder-actions">
+            <button id="inspect-decoded-btn" class="btn-secondary btn-inspect" title="Inspect full real size">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                <line x1="11" y1="8" x2="11" y2="14"></line>
+                <line x1="8" y1="11" x2="14" y2="11"></line>
+              </svg>
+              View Full Size
+            </button>
+            <a id="download-decoded-btn" class="btn-secondary" style="text-decoration:none;" download="decoded-image.png">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              Download Image
+            </a>
+          </div>
         </div>
       </div>
     </section>
 
     <!-- Features / Highlights -->
     <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            <line x1="11" y1="8" x2="11" y2="14"></line>
+            <line x1="8" y1="11" x2="14" y2="11"></line>
+          </svg>
+        </div>
+        <div class="feature-info">
+          <h5>Real-Size Lightbox Viewer</h5>
+          <p>Inspect images in pixel-crisp 1:1 original resolution or fit-to-screen with quick download &amp; copy actions.</p>
+        </div>
+      </div>
+
       <div class="feature-card">
         <div class="feature-icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1298,18 +1582,6 @@
         <div class="feature-info">
           <h5>100% Client-Side &amp; Private</h5>
           <p>All processing is executed entirely within your browser sandbox. No file is ever sent to a server.</p>
-        </div>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
-          </svg>
-        </div>
-        <div class="feature-info">
-          <h5>Multi-Format Exports</h5>
-          <p>Switch seamlessly between Markdown, Data URI, HTML &lt;img&gt;, CSS background-image, and raw base64.</p>
         </div>
       </div>
     </div>
@@ -1338,7 +1610,7 @@
         </a>
       </div>
       <div class="footer-credit">
-        <button id="footer-version-btn" class="footer-version-badge" title="Semantic Version 2.0.0 (Click for Changelog)">v2.0.0</button>
+        <button id="footer-version-btn" class="footer-version-badge" title="Semantic Version 2.1.0 (Click for Changelog)">v2.1.0</button>
         &bull; &copy; <span id="year">2026</span> ranggakd &bull; Built with clean vanilla web standards
       </div>
     </footer>
@@ -1349,7 +1621,7 @@
     <div class="dialog-content">
       <div class="dialog-header">
         <div class="dialog-title-group">
-          <span class="version-pill-modal">v2.0.0</span>
+          <span class="version-pill-modal">v2.1.0</span>
           <h3>Version &amp; Release Notes</h3>
         </div>
         <button id="close-dialog-btn" class="close-btn" aria-label="Close dialog">
@@ -1368,15 +1640,15 @@
           </div>
           <span class="semver-dot-divider">.</span>
           <div class="semver-block">
-            <span class="semver-num minor">0</span>
+            <span class="semver-num minor">1</span>
             <span class="semver-label">MINOR</span>
-            <span class="semver-desc">Dual modes, 5 export formats, demo</span>
+            <span class="semver-desc">Real-size lightbox modal viewer</span>
           </div>
           <span class="semver-dot-divider">.</span>
           <div class="semver-block">
             <span class="semver-num patch">0</span>
             <span class="semver-label">PATCH</span>
-            <span class="semver-desc">Initial stable release of v2</span>
+            <span class="semver-desc">Initial stable release of v2.1</span>
           </div>
         </div>
 
@@ -1386,15 +1658,21 @@
             <div class="changelog-item">
               <div class="changelog-ver">
                 <span class="version-dot"></span>
-                v2.0.0 &bull; Revitalization Milestone (Current)
+                v2.1.0 &bull; Lightbox Viewer Feature (Latest)
               </div>
+              <ul>
+                <li><strong>Real-Size Lightbox Modal</strong>: Click any image thumbnail (uploaded image, decoded output, or demo sample) to inspect it in a dedicated high-fidelity viewer.</li>
+                <li><strong>1:1 Actual Pixels vs. Fit-to-Screen</strong>: Toggle between viewing images scaled to viewport or unconstrained at 100% true native resolution.</li>
+                <li><strong>In-Modal Actions</strong>: Direct download, copy image/URL, and full dimension/format metadata badges.</li>
+              </ul>
+            </div>
+            <div class="changelog-item">
+              <div class="changelog-ver">v2.0.0 &bull; Revitalization Milestone</div>
               <ul>
                 <li>Modern dark obsidian design system with glassmorphism and ambient mesh gradients.</li>
                 <li>Zero external runtime dependencies: removed legacy Semantic UI &amp; jQuery CDNs.</li>
                 <li>Dual-mode architecture: Image &rarr; Base64 encoder and Base64 &rarr; Image decoder.</li>
                 <li>Multi-format exports: Markdown, Data URI, HTML &lt;img&gt;, CSS url(), and Raw Base64 string.</li>
-                <li>Image metadata metrics: dimensions, original file size, and Base64 payload size with overhead calculation.</li>
-                <li>Clipboard paste (<kbd>Ctrl+V</kbd>) and 1-click "Cat WOULD" interactive demo.</li>
                 <li>Semantic Versioning (SemVer) formal integration across codebase and UI.</li>
               </ul>
             </div>
@@ -1410,6 +1688,57 @@
     </div>
   </dialog>
 
+  <!-- Full-Resolution Image Lightbox Dialog (v2.1.0) -->
+  <dialog id="lightbox-dialog" class="lightbox-dialog" aria-label="Image Full Size Lightbox">
+    <div class="lightbox-header">
+      <div class="lightbox-meta">
+        <span id="lb-title" class="lightbox-title">Image Full Size</span>
+        <span id="lb-dim" class="stat-badge">0 &times; 0 px</span>
+        <span id="lb-size" class="stat-badge">0 KB</span>
+      </div>
+      <div class="lightbox-controls">
+        <button id="lb-mode-fit" class="lightbox-toggle-btn active" title="Fit to Screen">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="4 14 10 14 10 20"></polyline>
+            <polyline points="20 10 14 10 14 4"></polyline>
+            <line x1="14" y1="10" x2="21" y2="3"></line>
+            <line x1="3" y1="21" x2="10" y2="14"></line>
+          </svg>
+          Fit to Screen
+        </button>
+        <button id="lb-mode-real" class="lightbox-toggle-btn" title="View 1:1 Actual Pixels">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            <line x1="11" y1="8" x2="11" y2="14"></line>
+            <line x1="8" y1="11" x2="14" y2="11"></line>
+          </svg>
+          1:1 Real Size (100%)
+        </button>
+        <a id="lb-download-btn" class="lightbox-toggle-btn" download="image.png" title="Download Image">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Download
+        </a>
+        <button id="lb-close-btn" class="close-btn" aria-label="Close Lightbox">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div id="lb-viewport" class="lightbox-viewport">
+      <img id="lb-img" class="lightbox-img mode-fit" src="" alt="Real size view" />
+      <div id="lb-scale-label" class="lightbox-footer-info">
+        Fit to Screen &bull; Click "1:1 Real Size" to view native pixels
+      </div>
+    </div>
+  </dialog>
+
   <!-- Toast Notification -->
   <div id="toast" class="toast">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
@@ -1420,7 +1749,7 @@
 
   <script>
     // Constants & App Version
-    const APP_VERSION = '2.0.0';
+    const APP_VERSION = '2.1.0';
     console.info(`%c64 base64ed v${APP_VERSION} initialized`, 'color: #10b981; font-weight: bold; font-size: 1.1em;');
 
     // State
@@ -1436,11 +1765,21 @@
       height: 0
     };
 
+    // Lightbox State
+    const lbState = {
+      src: '',
+      title: 'Image',
+      dim: '0 × 0 px',
+      size: '0 KB',
+      mode: 'fit' // 'fit' | 'real'
+    };
+
     // DOM Elements
     const dropzone = document.getElementById('dropzone');
     const fileInput = document.getElementById('file-input');
     const previewSection = document.getElementById('preview-section');
     const previewImg = document.getElementById('preview-img');
+    const previewImgContainer = document.getElementById('preview-img-container');
     const fileNameEl = document.getElementById('file-name');
     const fileDimEl = document.getElementById('file-dim');
     const fileOrigSizeEl = document.getElementById('file-orig-size');
@@ -1452,7 +1791,9 @@
     const copyBtn = document.getElementById('copy-btn');
     const copyBtnText = document.getElementById('copy-btn-text');
     const clearBtn = document.getElementById('clear-btn');
+    const inspectBtn = document.getElementById('inspect-btn');
     const loadSampleBtn = document.getElementById('load-sample-btn');
+    const showcaseThumbWrap = document.getElementById('showcase-thumb-wrap');
     const toast = document.getElementById('toast');
 
     // Version Dialog Elements
@@ -1460,6 +1801,19 @@
     const footerVersionBtn = document.getElementById('footer-version-btn');
     const versionDialog = document.getElementById('version-dialog');
     const closeDialogBtn = document.getElementById('close-dialog-btn');
+
+    // Lightbox Elements
+    const lightboxDialog = document.getElementById('lightbox-dialog');
+    const lbImg = document.getElementById('lb-img');
+    const lbTitle = document.getElementById('lb-title');
+    const lbDim = document.getElementById('lb-dim');
+    const lbSize = document.getElementById('lb-size');
+    const lbModeFit = document.getElementById('lb-mode-fit');
+    const lbModeReal = document.getElementById('lb-mode-real');
+    const lbDownloadBtn = document.getElementById('lb-download-btn');
+    const lbCloseBtn = document.getElementById('lb-close-btn');
+    const lbScaleLabel = document.getElementById('lb-scale-label');
+    const lbViewport = document.getElementById('lb-viewport');
 
     // Mode Toggle Elements
     const modeEncoderBtn = document.getElementById('mode-encoder-btn');
@@ -1472,8 +1826,10 @@
     const decodeBtn = document.getElementById('decode-btn');
     const decoderResult = document.getElementById('decoder-result');
     const decoderImg = document.getElementById('decoder-img');
+    const decoderImgWrapper = document.getElementById('decoder-img-wrapper');
     const decoderInfo = document.getElementById('decoder-info');
     const downloadDecodedBtn = document.getElementById('download-decoded-btn');
+    const inspectDecodedBtn = document.getElementById('inspect-decoded-btn');
 
     // Update Year
     document.getElementById('year').textContent = new Date().getFullYear();
@@ -1490,7 +1846,6 @@
     footerVersionBtn.addEventListener('click', openVersionDialog);
     closeDialogBtn.addEventListener('click', closeVersionDialog);
 
-    // Close when clicking outside dialog (on backdrop)
     versionDialog.addEventListener('click', (e) => {
       const rect = versionDialog.getBoundingClientRect();
       const isInDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&
@@ -1498,6 +1853,101 @@
       if (!isInDialog) {
         versionDialog.close();
       }
+    });
+
+    // Lightbox Modal Controls
+    function openLightbox(src, title, dim, size) {
+      if (!src) return;
+      lbState.src = src;
+      lbState.title = title || 'Image';
+      lbState.dim = dim || '0 × 0 px';
+      lbState.size = size || '';
+      lbState.mode = 'fit';
+
+      lbImg.src = src;
+      lbTitle.textContent = lbState.title;
+      lbDim.textContent = lbState.dim;
+      lbSize.textContent = lbState.size;
+      lbDownloadBtn.href = src;
+      lbDownloadBtn.download = lbState.title.replace(/\.[^/.]+$/, "") + '.png';
+
+      setLightboxMode('fit');
+      lightboxDialog.showModal();
+    }
+
+    function closeLightbox() {
+      lightboxDialog.close();
+      lbImg.src = '';
+    }
+
+    function setLightboxMode(mode) {
+      lbState.mode = mode;
+      if (mode === 'fit') {
+        lbImg.className = 'lightbox-img mode-fit';
+        lbModeFit.classList.add('active');
+        lbModeReal.classList.remove('active');
+        lbScaleLabel.textContent = 'Fit to Screen • Click "1:1 Real Size" to view native pixels';
+      } else {
+        lbImg.className = 'lightbox-img mode-real';
+        lbModeReal.classList.add('active');
+        lbModeFit.classList.remove('active');
+        lbScaleLabel.textContent = '1:1 Actual Size (100% native resolution) • Scroll to pan';
+      }
+    }
+
+    lbModeFit.addEventListener('click', () => setLightboxMode('fit'));
+    lbModeReal.addEventListener('click', () => setLightboxMode('real'));
+    lbCloseBtn.addEventListener('click', closeLightbox);
+
+    lightboxDialog.addEventListener('click', (e) => {
+      const rect = lightboxDialog.getBoundingClientRect();
+      const isInDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&
+        rect.left <= e.clientX && e.clientX <= rect.left + rect.width);
+      if (!isInDialog) {
+        closeLightbox();
+      }
+    });
+
+    // Lightbox Triggers
+    previewImgContainer.addEventListener('click', () => {
+      openLightbox(state.currentDataUrl, state.fileName, `${state.width} × ${state.height} px`, formatBytes(state.fileSize));
+    });
+
+    previewImgContainer.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openLightbox(state.currentDataUrl, state.fileName, `${state.width} × ${state.height} px`, formatBytes(state.fileSize));
+      }
+    });
+
+    inspectBtn.addEventListener('click', () => {
+      openLightbox(state.currentDataUrl, state.fileName, `${state.width} × ${state.height} px`, formatBytes(state.fileSize));
+    });
+
+    showcaseThumbWrap.addEventListener('click', () => {
+      openLightbox('assets/cat_would.jpeg', 'cat_would.jpeg', '458 × 612 px', '46.4 KB');
+    });
+
+    showcaseThumbWrap.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openLightbox('assets/cat_would.jpeg', 'cat_would.jpeg', '458 × 612 px', '46.4 KB');
+      }
+    });
+
+    decoderImgWrapper.addEventListener('click', () => {
+      openLightbox(decoderImg.src, 'decoded-image.png', decoderInfo.textContent.replace('Dimensions: ', ''), '');
+    });
+
+    decoderImgWrapper.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openLightbox(decoderImg.src, 'decoded-image.png', decoderInfo.textContent.replace('Dimensions: ', ''), '');
+      }
+    });
+
+    inspectDecodedBtn.addEventListener('click', () => {
+      openLightbox(decoderImg.src, 'decoded-image.png', decoderInfo.textContent.replace('Dimensions: ', ''), '');
     });
 
     // Mode Navigation

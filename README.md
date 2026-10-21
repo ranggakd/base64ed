@@ -1,10 +1,10 @@
 # 6️⃣4️⃣ base64ed
 
-[![Version](https://img.shields.io/badge/version-2.0.0-emerald?style=flat-square)](https://github.com/ranggakd/base64ed/releases/tag/v2.0.0)
+[![Version](https://img.shields.io/badge/version-2.1.0-emerald?style=flat-square)](https://github.com/ranggakd/base64ed/releases/tag/v2.1.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live%20Demo-10b981?style=flat-square&logo=github)](https://ranggakd.github.io/base64ed/)
 
-> Instant, zero-latency image to Base64 encoder and decoder. Tailored for Markdown, HTML embeds, and CSS stylesheets.
+> Instant, zero-latency image to Base64 encoder, decoder, and full-resolution lightbox viewer. Tailored for Markdown, HTML embeds, and CSS stylesheets.
 
 **Live Application**: [https://ranggakd.github.io/base64ed/](https://ranggakd.github.io/base64ed/)
 
@@ -12,7 +12,11 @@
 
 ## ✨ Features
 
-- **Semantic Versioning**: Tracked as `v2.0.0` in both `package.json` and the interactive front-end UI.
+- **Semantic Versioning**: Formally tracked as `v2.1.0` in both `package.json` and the interactive front-end UI.
+- **Full-Resolution Lightbox Viewer**:
+  - Click any thumbnail (uploaded image, decoded output, or demo sample) to inspect it in a high-fidelity popup modal.
+  - Switch between **1:1 Real Pixels** and **Fit to Screen**.
+  - Dimension metadata display with direct in-modal download and copy actions.
 - **Image &rarr; Base64 (Encoder)**:
   - Drag-and-drop zone with animated glow states.
   - File picker (PNG, JPEG, WEBP, SVG, GIF, AVIF).
@@ -28,7 +32,7 @@
 - **Base64 &rarr; Image (Decoder)**:
   - Paste any Data URI, raw Base64 string, or Markdown image tag.
   - Reconstructs and previews the image with dimensions.
-  - Direct 1-click image download button.
+  - Full-resolution preview popup and direct 1-click image download button.
 - **Interactive Demo**: 1-click test button loaded with the iconic "Cat WOULD" sample image.
 - **Zero External Dependencies**: Pure vanilla HTML5, CSS3, and ES6. 100% private and runs fully client-side.
 
@@ -37,8 +41,8 @@
 ## 📦 Versioning
 
 This project adheres to [Semantic Versioning (SemVer)](https://semver.org/):
-- **Current Version**: `v2.0.0`
-- Click the `v2.0.0` badge on the web UI to inspect release notes and SemVer breakdown.
+- **Current Version**: `v2.1.0` (Minor feature bump: Real-size image modal lightbox viewer)
+- Click the `v2.1.0` badge on the web UI to inspect release notes and SemVer breakdown.
 
 ---
 

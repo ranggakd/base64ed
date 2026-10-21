@@ -1,7 +1,7 @@
 {
   "name": "base64ed",
-  "version": "2.0.0",
-  "description": "Fast, modern, zero-dependency client-side image to Base64 encoder and decoder",
+  "version": "2.1.0",
+  "description": "Fast, modern, zero-dependency client-side image to Base64 encoder, decoder, and full-resolution lightbox viewer",
   "author": "ranggakd",
   "license": "MIT",
   "homepage": "https://ranggakd.github.io/base64ed/",
