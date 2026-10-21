@@ -5,14 +5,15 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>64 base64ed — Modern Image &lt;&gt; Base64 Converter</title>
+  <title>64 base64ed v2.0.0 — Modern Image &lt;&gt; Base64 Converter</title>
   <meta name="description" content="Fast, beautiful, client-side image to Base64 encoder and decoder. Perfect for Markdown, HTML, CSS, and web development." />
+  <meta name="version" content="2.0.0" />
   <link rel="icon" type="image/png" href="assets/icon.png" />
 
   <!-- Google Fonts: Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <style>
     :root {
@@ -119,6 +120,14 @@
       gap: 0.85rem;
     }
 
+    .header-badges {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
     .badge-tag {
       display: inline-flex;
       align-items: center;
@@ -140,6 +149,48 @@
       height: 14px;
     }
 
+    /* SemVer Badge in Header */
+    .version-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.25rem 0.7rem;
+      border-radius: 9999px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #34d399;
+      font-family: var(--font-mono);
+      font-size: 0.825rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      vertical-align: middle;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.15);
+      text-decoration: none;
+    }
+
+    .version-badge:hover {
+      background: rgba(16, 185, 129, 0.22);
+      border-color: #34d399;
+      transform: translateY(-1px);
+      box-shadow: 0 0 18px rgba(16, 185, 129, 0.3);
+    }
+
+    .version-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: #10b981;
+      display: inline-block;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulseDot 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(0.85); }
+    }
+
     h1.app-title {
       font-size: 2.75rem;
       font-weight: 800;
@@ -148,7 +199,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.6rem;
+      gap: 0.65rem;
       flex-wrap: wrap;
     }
 
@@ -763,6 +814,225 @@
     .footer-credit {
       font-size: 0.85rem;
       color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .footer-version-badge {
+      font-family: var(--font-mono);
+      font-size: 0.775rem;
+      font-weight: 600;
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .footer-version-badge:hover {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: #34d399;
+      color: #ffffff;
+    }
+
+    /* Native Dialog: Version & Changelog Modal */
+    .version-dialog {
+      margin: auto;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      background: #0f172a;
+      color: var(--text-main);
+      padding: 0;
+      max-width: 580px;
+      width: 90vw;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 30px rgba(16, 185, 129, 0.15);
+      outline: none;
+      overflow: hidden;
+    }
+
+    .version-dialog::backdrop {
+      background: rgba(4, 7, 13, 0.75);
+      backdrop-filter: blur(8px);
+    }
+
+    .dialog-content {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .dialog-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.5rem 1.75rem;
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .dialog-title-group {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .dialog-title-group h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .version-pill-modal {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 0.2rem 0.65rem;
+      border-radius: 9999px;
+    }
+
+    .close-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .close-btn:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .dialog-body {
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    /* SemVer Breakdown Grid */
+    .semver-explainer {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 1.25rem 1rem;
+      text-align: center;
+    }
+
+    .semver-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      flex: 1;
+    }
+
+    .semver-num {
+      font-family: var(--font-mono);
+      font-size: 1.85rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .semver-num.major { color: #10b981; }
+    .semver-num.minor { color: #06b6d4; }
+    .semver-num.patch { color: #a78bfa; }
+
+    .semver-label {
+      font-size: 0.725rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .semver-desc {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      max-width: 130px;
+      line-height: 1.35;
+    }
+
+    .semver-dot-divider {
+      font-family: var(--font-mono);
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: var(--text-dim);
+      margin-bottom: 1.25rem;
+    }
+
+    /* Changelog List */
+    .changelog-section-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .changelog-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .changelog-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+    }
+
+    .changelog-ver {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #34d399;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .changelog-item.legacy .changelog-ver {
+      color: var(--text-dim);
+    }
+
+    .changelog-item ul {
+      list-style-type: disc;
+      padding-left: 1.25rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .changelog-item ul li kbd {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
     }
 
     /* Responsive adjustments */
@@ -796,6 +1066,13 @@
         width: 100%;
         justify-content: flex-start;
       }
+      .semver-explainer {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .semver-dot-divider {
+        display: none;
+      }
     }
   </style>
 </head>
@@ -811,13 +1088,20 @@
   <div class="app-wrapper">
     <!-- Header -->
     <header>
-      <div class="badge-tag">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="16 18 22 12 16 6"></polyline>
-          <polyline points="8 6 2 12 8 18"></polyline>
-        </svg>
-        Client-Side &bull; 100% Private
+      <div class="header-badges">
+        <div class="badge-tag">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 18 22 12 16 6"></polyline>
+            <polyline points="8 6 2 12 8 18"></polyline>
+          </svg>
+          Client-Side &bull; 100% Private
+        </div>
+        <button id="version-badge" class="version-badge" aria-label="Version 2.0.0 Changelog" title="Semantic Version 2.0.0 (Click to view Changelog)">
+          <span class="version-dot"></span>
+          <span>v2.0.0</span>
+        </button>
       </div>
+
       <h1 class="app-title">
         <span>6️⃣4️⃣</span>
         <span class="highlight">base64ed</span>
@@ -1054,10 +1338,77 @@
         </a>
       </div>
       <div class="footer-credit">
-        &copy; <span id="year">2026</span> ranggakd &bull; Built with clean vanilla web standards
+        <button id="footer-version-btn" class="footer-version-badge" title="Semantic Version 2.0.0 (Click for Changelog)">v2.0.0</button>
+        &bull; &copy; <span id="year">2026</span> ranggakd &bull; Built with clean vanilla web standards
       </div>
     </footer>
   </div>
+
+  <!-- Native Semantic Dialog: SemVer & Release Notes -->
+  <dialog id="version-dialog" class="version-dialog">
+    <div class="dialog-content">
+      <div class="dialog-header">
+        <div class="dialog-title-group">
+          <span class="version-pill-modal">v2.0.0</span>
+          <h3>Version &amp; Release Notes</h3>
+        </div>
+        <button id="close-dialog-btn" class="close-btn" aria-label="Close dialog">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="dialog-body">
+        <div class="semver-explainer">
+          <div class="semver-block">
+            <span class="semver-num major">2</span>
+            <span class="semver-label">MAJOR</span>
+            <span class="semver-desc">Complete visual overhaul &amp; rewrite</span>
+          </div>
+          <span class="semver-dot-divider">.</span>
+          <div class="semver-block">
+            <span class="semver-num minor">0</span>
+            <span class="semver-label">MINOR</span>
+            <span class="semver-desc">Dual modes, 5 export formats, demo</span>
+          </div>
+          <span class="semver-dot-divider">.</span>
+          <div class="semver-block">
+            <span class="semver-num patch">0</span>
+            <span class="semver-label">PATCH</span>
+            <span class="semver-desc">Initial stable release of v2</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="changelog-section-title">Changelog History</div>
+          <div class="changelog-list">
+            <div class="changelog-item">
+              <div class="changelog-ver">
+                <span class="version-dot"></span>
+                v2.0.0 &bull; Revitalization Milestone (Current)
+              </div>
+              <ul>
+                <li>Modern dark obsidian design system with glassmorphism and ambient mesh gradients.</li>
+                <li>Zero external runtime dependencies: removed legacy Semantic UI &amp; jQuery CDNs.</li>
+                <li>Dual-mode architecture: Image &rarr; Base64 encoder and Base64 &rarr; Image decoder.</li>
+                <li>Multi-format exports: Markdown, Data URI, HTML &lt;img&gt;, CSS url(), and Raw Base64 string.</li>
+                <li>Image metadata metrics: dimensions, original file size, and Base64 payload size with overhead calculation.</li>
+                <li>Clipboard paste (<kbd>Ctrl+V</kbd>) and 1-click "Cat WOULD" interactive demo.</li>
+                <li>Semantic Versioning (SemVer) formal integration across codebase and UI.</li>
+              </ul>
+            </div>
+            <div class="changelog-item legacy">
+              <div class="changelog-ver">v1.0.0 &bull; Legacy Prototype (2023)</div>
+              <ul>
+                <li>Initial single-purpose drag-and-drop experiment built with Semantic UI.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </dialog>
 
   <!-- Toast Notification -->
   <div id="toast" class="toast">
@@ -1068,6 +1419,10 @@
   </div>
 
   <script>
+    // Constants & App Version
+    const APP_VERSION = '2.0.0';
+    console.info(`%c64 base64ed v${APP_VERSION} initialized`, 'color: #10b981; font-weight: bold; font-size: 1.1em;');
+
     // State
     const state = {
       mode: 'encoder', // 'encoder' | 'decoder'
@@ -1100,6 +1455,12 @@
     const loadSampleBtn = document.getElementById('load-sample-btn');
     const toast = document.getElementById('toast');
 
+    // Version Dialog Elements
+    const versionBadge = document.getElementById('version-badge');
+    const footerVersionBtn = document.getElementById('footer-version-btn');
+    const versionDialog = document.getElementById('version-dialog');
+    const closeDialogBtn = document.getElementById('close-dialog-btn');
+
     // Mode Toggle Elements
     const modeEncoderBtn = document.getElementById('mode-encoder-btn');
     const modeDecoderBtn = document.getElementById('mode-decoder-btn');
@@ -1116,6 +1477,28 @@
 
     // Update Year
     document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Version Modal Controls
+    function openVersionDialog() {
+      versionDialog.showModal();
+    }
+    function closeVersionDialog() {
+      versionDialog.close();
+    }
+
+    versionBadge.addEventListener('click', openVersionDialog);
+    footerVersionBtn.addEventListener('click', openVersionDialog);
+    closeDialogBtn.addEventListener('click', closeVersionDialog);
+
+    // Close when clicking outside dialog (on backdrop)
+    versionDialog.addEventListener('click', (e) => {
+      const rect = versionDialog.getBoundingClientRect();
+      const isInDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&
+        rect.left <= e.clientX && e.clientX <= rect.left + rect.width);
+      if (!isInDialog) {
+        versionDialog.close();
+      }
+    });
 
     // Mode Navigation
     modeEncoderBtn.addEventListener('click', () => switchMode('encoder'));
